@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mixdrop to Telegram Uploader</title>
+  <style>
+    body { font-family: 'Tahoma', sans-serif; background-color: #f4f4f9; color: #333; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    .container { max-width: 400px; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); text-align: center; }
+    input[type="url"] { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; transition: border 0.3s; }
+    input[type="url"]:focus { border-color: #4caf50; outline: none; }
+    button { background-color: #4caf50; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; width: 100%; transition: background 0.3s; }
+    button:hover { background-color: #45a049; }
+    .progress { display: none; margin-top: 20px; font-size: 14px; color: #666; }
+    .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #4caf50; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .message { margin-top: 10px; font-weight: bold; }
+    .success { color: #4caf50; }
+    .error { color: #f44336; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>آپلود ویدیو Mixdrop به تلگرام</h2>
+    <form id="uploadForm">
+      <input type="url" id="mixdropLink" placeholder="لینک Mixdrop رو وارد کنید" required>
+      <button type="submit">آپلود اتوماتیک</button>
+    </form>
+    <div id="progress" class="progress">
+      <div class="spinner"></div>
+      <span>در حال پردازش...</span>
+      <div id="message" class="message"></div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const progressDiv = document.getElementById('progress');
+    const messageDiv = document.getElementById('message');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const link = document.getElementById('mixdropLink').value;
+      progressDiv.style.display = 'block';
+      messageDiv.textContent = '';
+      messageDiv.classList.remove('success', 'error');
+
+      try {
+        const response = await fetch('https://your-worker-name.your-username.workers.dev/?link=' + encodeURIComponent(link) + '&upload=1');
+        if (!response.ok) throw new Error('خطا در Worker: ' + response.status);
+        const data = await response.json();
+        if (data.success) {
+          messageDiv.textContent = data.message;
+          messageDiv.classList.add('success');
+        } else {
+          throw new Error('ناموفق');
+        }
+      } catch (error) {
+        messageDiv.textContent = error.message;
+        messageDiv.classList.add('error');
+      } finally {
+        setTimeout(() => { progressDiv.style.display = 'none'; }, 2000);  // پنهان کردن پس از ۲ ثانیه
+      }
+    });
+  </script>
+</body>
+</html>
